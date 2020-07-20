@@ -1,0 +1,55 @@
+version: '3'
+services:
+  switch:
+    image: python
+    volumes:
+      - ./entrypoint_switch.sh:/entrypoint_switch.sh
+      - ./code/switch.py:/switch.py
+      - ./code/config.json:/config.json
+    entrypoint: /entrypoint_switch.sh
+    networks:
+      public:
+        ipv4_address: 172.42.0.2
+      neta:
+        ipv4_address: 172.42.1.3
+      netb:
+        ipv4_address: 172.42.2.3
+  nodea:
+    build: ./nodex
+    volumes:
+      - ./entrypoint_nodea.sh:/entrypoint_nodea.sh
+    entrypoint: /entrypoint_nodea.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      neta:
+        ipv4_address: 172.42.1.2
+  nodeb:
+    build: ./nodex
+    volumes:
+      - ./entrypoint_nodeb.sh:/entrypoint_nodeb.sh
+    entrypoint: /entrypoint_nodeb.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      netb:
+        ipv4_address: 172.42.2.2
+
+networks:
+  public:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.42.0.0/24
+  neta:
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.42.1.0/24
+  netb:
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.42.2.0/24
